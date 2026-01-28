@@ -238,6 +238,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderWidth: 1,
     borderColor: "#E0E0E0",
+    color: COLORS.darkGray, // Fix for invisible text
   },
   textArea: { height: 100, paddingTop: 15, textAlignVertical: "top" },
   button: {
