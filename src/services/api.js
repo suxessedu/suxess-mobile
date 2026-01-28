@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// TODO: Replace with your actual PythonAnywhere URL after deployment
-const PROD_URL = "https://<your-username>.pythonanywhere.com/api";
+// Live Backend URL
+const PROD_URL = "https://suxessedu.pythonanywhere.com/api";
 const DEV_URL = "http://192.168.137.164:5000/api";
 
 const API_URL = __DEV__ ? DEV_URL : PROD_URL;
