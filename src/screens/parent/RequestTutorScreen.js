@@ -81,28 +81,39 @@ const RequestTutorScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.sectionTitle}>Student Information</Text>
+        
+        <Text style={styles.label}>Student's Name</Text>
         <TextInput
           style={styles.input}
-          placeholder="Student's Name"
+          placeholder="e.g. John Doe"
+          placeholderTextColor="#999"
           onChangeText={(v) => handleInputChange("studentName", v)}
         />
+
+        <Text style={styles.label}>Age</Text>
         <TextInput
           style={styles.input}
-          placeholder="Age"
+          placeholder="e.g. 15"
+          placeholderTextColor="#999"
           keyboardType="numeric"
           onChangeText={(v) => handleInputChange("studentAge", v)}
         />
+
+        <Text style={styles.label}>Grade / Level</Text>
         <TextInput
           style={styles.input}
-          placeholder="Grade / Level"
+          placeholder="e.g. JSS 3"
+          placeholderTextColor="#999"
           onChangeText={(v) => handleInputChange("studentGrade", v)}
         />
+
+        <Text style={styles.label}>Subjects Needed</Text>
         <TouchableOpacity
           style={styles.input}
           onPress={() => setShowSubjectPicker(true)}
         >
-          <Text style={{ color: formData.subjects ? "#333" : "#C7C7CD", marginTop: 12 }}>
-            {formData.subjects || "Select Subjects"}
+          <Text style={{ color: formData.subjects ? "#333" : "#999", marginTop: 12 }}>
+            {formData.subjects || "Tap to select subjects"}
           </Text>
         </TouchableOpacity>
 
@@ -134,7 +145,8 @@ const RequestTutorScreen = ({ navigation }) => {
         />
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Specific Learning Goals or Needs"
+          placeholder="e.g. Prepare for JSCE exams, improve Math skills"
+          placeholderTextColor="#999"
           multiline
           onChangeText={(v) => handleInputChange("learningGoals", v)}
         />
@@ -145,23 +157,31 @@ const RequestTutorScreen = ({ navigation }) => {
           value={formData.previousExperience}
           onValueChange={(v) => handleInputChange("previousExperience", v)}
         />
+        
+        <Text style={styles.label}>Teaching Style Preference</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Any Specific Teaching Style or Approach Preferred?"
+          placeholder="e.g. Patient, firm, uses visual aids..."
+          placeholderTextColor="#999"
           multiline
           onChangeText={(v) => handleInputChange("stylePreference", v)}
         />
 
         <Text style={styles.sectionTitle}>Contact & Location</Text>
+        <Text style={styles.label}>Contact Number</Text>
         <TextInput
           style={styles.input}
-          placeholder="Contact Number"
+          placeholder="e.g. 08012345678"
+          placeholderTextColor="#999"
           keyboardType="phone-pad"
           onChangeText={(v) => handleInputChange("parentContact", v)}
         />
+
+        <Text style={styles.label}>Home Address</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="House Address"
+          placeholder="Enter full street address"
+          placeholderTextColor="#999"
           multiline
           onChangeText={(v) => handleInputChange("houseAddress", v)}
         />
@@ -201,6 +221,13 @@ const styles = StyleSheet.create({
     color: COLORS.darkGray,
     marginTop: 20,
     marginBottom: 15,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: COLORS.darkGray,
+    marginBottom: 8,
+    marginLeft: 4,
   },
   input: {
     backgroundColor: COLORS.white,

@@ -10,11 +10,12 @@ import {
   Alert,
 } from "react-native";
 import { COLORS } from "../../constants/colors";
-import { AuthContext } from "../../context/AuthContext";
+import { Ionicons } from "@expo/vector-icons";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const { login } = useContext(AuthContext);
 
   const handleLogin = async () => {
@@ -54,14 +55,26 @@ const LoginScreen = ({ navigation }) => {
           </View>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              secureTextEntry
-              placeholderTextColor={COLORS.gray}
-              value={password}
-              onChangeText={setPassword}
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="••••••••"
+                secureTextEntry={!isPasswordVisible}
+                placeholderTextColor={COLORS.gray}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                style={styles.eyeIcon}
+              >
+                <Ionicons
+                  name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+                  size={24}
+                  color={COLORS.gray}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
           <TouchableOpacity>
             <Text style={styles.forgotPassword}>Forgot Password?</Text>
@@ -123,6 +136,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: "#E0E0E0",
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    paddingHorizontal: 15,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 15,
+    fontSize: 16,
+  },
+  eyeIcon: {
+    padding: 10,
   },
   forgotPassword: {
     textAlign: "right",

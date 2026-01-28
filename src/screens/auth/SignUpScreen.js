@@ -12,11 +12,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "../../constants/colors";
 import api from "../../services/api";
+import { Ionicons } from "@expo/vector-icons";
 
 const SignUpScreen = ({ navigation }) => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [role, setRole] = useState("parent");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -133,14 +135,26 @@ const SignUpScreen = ({ navigation }) => {
           </View>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              secureTextEntry
-              placeholderTextColor={COLORS.gray}
-              value={password}
-              onChangeText={setPassword}
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="••••••••"
+                secureTextEntry={!isPasswordVisible}
+                placeholderTextColor={COLORS.gray}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                style={styles.eyeIcon}
+              >
+                <Ionicons
+                  name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+                  size={24}
+                  color={COLORS.gray}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
           <TouchableOpacity
             style={styles.signupButton}
@@ -237,6 +251,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: "#E0E0E0",
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    paddingHorizontal: 15,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 15,
+    fontSize: 16,
+  },
+  eyeIcon: {
+    padding: 10,
   },
   signupButton: {
     backgroundColor: COLORS.primary,
