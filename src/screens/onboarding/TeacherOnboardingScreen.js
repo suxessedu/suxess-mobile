@@ -90,18 +90,22 @@ const TeacherOnboardingScreen = ({ navigation }) => {
           </Text>
 
           <Text style={styles.sectionTitle}>Academic Qualifications</Text>
+          
+          <Text style={styles.label}>Highest Qualification</Text>
           <TextInput
             style={styles.input}
-            placeholder="Highest Qualification (e.g., Bachelor's)"
+            placeholder="e.g., Bachelor's Degree"
+            placeholderTextColor={COLORS.gray}
             onChangeText={(v) => handleInputChange("highestQualification", v)}
           />
 
+          <Text style={styles.label}>Relevant Subjects</Text>
           <TouchableOpacity
             style={styles.input}
             onPress={() => setShowSubjectPicker(true)}
           >
-            <Text style={{ color: formData.relevantSubjects ? "#333" : "#C7C7CD", marginTop: 12 }}>
-              {formData.relevantSubjects || "Select Relevant Subjects"}
+            <Text style={{ color: formData.relevantSubjects ? COLORS.darkGray : COLORS.gray, marginTop: 12 }}>
+              {formData.relevantSubjects || "Select Subjects"}
             </Text>
           </TouchableOpacity>
 
@@ -118,48 +122,68 @@ const TeacherOnboardingScreen = ({ navigation }) => {
             }
           />
 
+          <Text style={styles.label}>Teaching Experience</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Teaching Experience (Years, Subjects)"
+            placeholder="Describe your experience..."
+            placeholderTextColor={COLORS.gray}
             multiline
             onChangeText={(v) => handleInputChange("teachingExperience", v)}
           />
 
           <Text style={styles.sectionTitle}>Teaching Style & Approach</Text>
+          
+          <Text style={styles.label}>Teaching Philosophy</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Teaching Philosophy"
+            placeholder="What is your style?"
+            placeholderTextColor={COLORS.gray}
             multiline
             onChangeText={(v) => handleInputChange("teachingPhilosophy", v)}
           />
+
+          <Text style={styles.label}>Lesson Planning</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Approach to Lesson Planning"
+            placeholder="How do you plan lessons?"
+            placeholderTextColor={COLORS.gray}
             multiline
             onChangeText={(v) => handleInputChange("lessonPlanning", v)}
           />
+
+          <Text style={styles.label}>Specialized Methods</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Specialized Teaching Methods"
+            placeholder="Any special methods?"
+            placeholderTextColor={COLORS.gray}
             multiline
             onChangeText={(v) => handleInputChange("specializedMethods", v)}
           />
 
           <Text style={styles.sectionTitle}>Security</Text>
+          
+          <Text style={styles.label}>Home Address</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Home Address"
+            placeholder="Enter your full address"
+            placeholderTextColor={COLORS.gray}
             multiline
             onChangeText={(v) => handleInputChange("homeAddress", v)}
           />
+
+          <Text style={styles.label}>Guarantor's Name</Text>
           <TextInput
             style={styles.input}
-            placeholder="Guarantor's Name"
+            placeholder="Full Name of Guarantor"
+            placeholderTextColor={COLORS.gray}
             onChangeText={(v) => handleInputChange("guarantorName", v)}
           />
+
+          <Text style={styles.label}>Guarantor's Details</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Guarantor's Address & Relationship"
+            placeholder="Address & Relationship"
+            placeholderTextColor={COLORS.gray}
             multiline
             onChangeText={(v) => handleInputChange("guarantorAddress", v)}
           />
@@ -208,6 +232,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 15,
   },
+  label: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: COLORS.darkGray,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
   input: {
     backgroundColor: COLORS.white,
     paddingHorizontal: 15,
@@ -217,6 +248,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderWidth: 1,
     borderColor: "#E0E0E0",
+    color: COLORS.darkGray, // Ensure text is visible
   },
   textArea: { height: 100, paddingTop: 15, textAlignVertical: "top" },
   button: {
