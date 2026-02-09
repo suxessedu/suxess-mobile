@@ -16,6 +16,16 @@ export const AuthProvider = ({ children }) => {
       const userData = response.data.user;
       setUser(userData);
       await AsyncStorage.setItem("userData", JSON.stringify(userData));
+      
+      // Manually persist session cookie for Android/iOS
+      const setCookie = response.headers["set-cookie"];
+      if (setCookie) {
+        // set-cookie is likely an array. We join it or store it as is. 
+        // For the Cookie header, we usually want "key=value; key2=value2"
+        const cookieString = Array.isArray(setCookie) ? setCookie.join("; ") : setCookie;
+        await AsyncStorage.setItem("userCookie", cookieString);
+      }
+      
       setIsLoading(false);
       return response.data;
     } catch (error) {
@@ -33,6 +43,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       await AsyncStorage.removeItem("userData");
+      await AsyncStorage.removeItem("userCookie");
       setNavKey((prevKey) => prevKey + 1);
       setIsLoading(false);
     }

@@ -23,24 +23,85 @@ const TeacherOnboardingScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
+
   const [showSubjectPicker, setShowSubjectPicker] = useState(false);
+  const [videoUri, setVideoUri] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleInputChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
   };
 
+  const pickVideo = async () => {
+    // Check permissions
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'We need access to your gallery to upload videos.');
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      allowsEditing: true,
+      quality: 1,
+      videoMaxDuration: 60, // Limit to 60 seconds
+    });
+
+    if (!result.canceled) {
+      setVideoUri(result.assets[0].uri);
+    }
+  };
+
+  const uploadToCloudinary = async (uri) => {
+    if (!uri) return null;
+
+    const data = new FormData();
+    data.append('file', {
+      uri: uri,
+      type: 'video/mp4',
+      name: 'upload.mp4',
+    });
+    data.append('upload_preset', 'suxess_video_upload'); // USER MUST CREATE THIS
+    data.append("cloud_name", "suxess_cloud"); // USER MUST REPLACE THIS
+
+    try {
+      const response = await fetch("https://api.cloudinary.com/v1_1/suxess_cloud/video/upload", {
+        method: "post",
+        body: data,
+      });
+      const result = await response.json();
+      return result.secure_url;
+    } catch (error) {
+      console.error("Upload failed:", error);
+      throw new Error("Video upload failed");
+    }
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await api.post("/teachers/profile", { ...formData, userId: user.id });
+      let uploadedVideoUrl = null;
+      if (videoUri) {
+         setUploadProgress(10); // Fake progress start
+         uploadedVideoUrl = await uploadToCloudinary(videoUri);
+         setUploadProgress(100);
+      }
+
+      await api.post("/teachers/profile", { 
+        ...formData, 
+        userId: user.id,
+        videoUrl: uploadedVideoUrl 
+      });
       setSubmissionSuccess(true);
     } catch (error) {
+      console.error(error);
       Alert.alert(
         "Error",
-        "Could not update profile. Please ensure all fields are filled."
+        "Could not update profile. " + (error.message || "Please ensure all fields are filled.")
       );
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(0);
     }
   };
 
@@ -280,6 +341,36 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 10,
     marginBottom: 40,
+  },
+  uploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderStyle: 'dashed',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 10,
+    gap: 10,
+  },
+  uploadButtonText: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  videoPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 20,
+    paddingHorizontal: 5,
+  },
+  previewText: {
+    color: COLORS.success,
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 

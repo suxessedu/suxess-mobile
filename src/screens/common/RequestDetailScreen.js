@@ -299,7 +299,58 @@ const RequestDetailScreen = ({ navigation }) => {
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      {/* PARENT ACTION BUTTONS */}
+      {user.role === "parent" && details.status === "Pending Acceptance" && (
+        <View style={styles.fixedFooter}>
+          <Text style={styles.offerText}>A Tutor has been matched!</Text>
+          <View style={styles.footerButtons}>
+             <TouchableOpacity
+              style={[styles.footerButton, { backgroundColor: 'white', borderColor: COLORS.danger, borderWidth: 1 }]}
+              onPress={() => {
+                Alert.alert("Reject Tutor", "Are you sure? We will look for another match.", [
+                    { text: "Cancel", style: "cancel" },
+                    { 
+                        text: "Reject", 
+                        style: "destructive",
+                        onPress: async () => {
+                            try {
+                                await api.post(`/requests/${requestId}/reject-match`);
+                                fetchData();
+                                Alert.alert("Match Rejected", "We will find another tutor for you.");
+                            } catch(e) { Alert.alert("Error", "Failed to reject."); }
+                        }
+                    }
+                ]);
+              }}
+            >
+               <Text style={[styles.logButtonText, { color: COLORS.danger }]}>Reject</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.footerButton, { backgroundColor: COLORS.success }]}
+              onPress={() => {
+                Alert.alert("Confirm Tutor", "Are you happy with this tutor?", [
+                    { text: "Cancel", style: "cancel" },
+                    { 
+                        text: "Yes, Confirm", 
+                        onPress: async () => {
+                            try {
+                                await api.post(`/requests/${requestId}/confirm-match`);
+                                fetchData();
+                                Alert.alert("Success", "Tutor confirmed! You can now chat.");
+                            } catch(e) { Alert.alert("Error", "Failed to confirm."); }
+                        }
+                    }
+                ]);
+              }}
+            >
+               <Text style={[styles.logButtonText, { color: 'white' }]}>Accept Tutor</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
       
+      {/* TEACHER ACTION BUTTONS */}
       {user.role === "teacher" && details.status === "Pending Acceptance" && (
         <View style={styles.fixedFooter}>
           <Text style={styles.offerText}>You have a new job offer!</Text>
