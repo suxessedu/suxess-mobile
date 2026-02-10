@@ -14,9 +14,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post("/auth/login", { email, password });
       const userData = response.data.user;
-      setUser(userData);
-      await AsyncStorage.setItem("userData", JSON.stringify(userData));
-      
       // Manually persist session cookie for Android/iOS
       const setCookie = response.headers["set-cookie"];
       if (setCookie) {
@@ -25,6 +22,9 @@ export const AuthProvider = ({ children }) => {
         const cookieString = Array.isArray(setCookie) ? setCookie.join("; ") : setCookie;
         await AsyncStorage.setItem("userCookie", cookieString);
       }
+      
+      await AsyncStorage.setItem("userData", JSON.stringify(userData));
+      setUser(userData);
       
       setIsLoading(false);
       return response.data;
@@ -56,6 +56,16 @@ export const AuthProvider = ({ children }) => {
     setNavKey((prevKey) => prevKey + 1);
   }, [user]);
 
+  const registerPushToken = async (token) => {
+    if (!token) return;
+    try {
+      await api.post("/notifications/register-token", { token });
+      console.log("Token registered with backend");
+    } catch (error) {
+      console.error("Failed to register token with backend:", error);
+    }
+  };
+
   const refreshUserVerification = useCallback(
     async (newStatus) => {
       const updatedUser = { ...user, verificationStatus: newStatus };
@@ -79,7 +89,9 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         refreshUserProfile,
+        refreshUserProfile,
         refreshUserVerification,
+        registerPushToken,
         navKey,
       }}
     >

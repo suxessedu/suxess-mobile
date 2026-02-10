@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "185590623740",
+    "project_id": "suxess-app",
+    "storage_bucket": "suxess-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:185590623740:android:1bfc752a14280cb7e79679",
+        "android_client_info": {
+          "package_name": "com.suxess.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCC0U0icy-nzUaUGvqgH1eAmdBzBTct6eE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

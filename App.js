@@ -73,8 +73,31 @@ function MainAppTabs() {
   );
 }
 
+import { usePushNotifications } from "./src/hooks/usePushNotifications";
+import { createNavigationContainerRef } from "@react-navigation/native";
+
+export const navigationRef = createNavigationContainerRef();
+
 function AppRouter() {
-  const { user, isLoading, navKey } = useContext(AuthContext);
+  // Handle Notification Response (Deep Linking)
+  const handleNotificationResponse = (response) => {
+    const data = response.notification.request.content.data;
+    if (data?.requestId && navigationRef.isReady()) {
+      navigationRef.navigate('RequestDetails', { requestId: data.requestId });
+    }
+  };
+
+  const { expoPushToken } = usePushNotifications(handleNotificationResponse);
+  const { user, isLoading, navKey, registerPushToken } = useContext(AuthContext);
+
+  // Register token when user logs in
+  React.useEffect(() => {
+    if (user && expoPushToken) {
+      console.log("Registering token for user:", user.email);
+      registerPushToken(expoPushToken);
+    }
+  }, [user, expoPushToken]);
+
 
   if (isLoading) {
     return (
@@ -85,6 +108,7 @@ function AppRouter() {
   }
 
   const renderScreens = () => {
+    // ... existing render logic ...
     if (!user) {
       return (
         <RootStack.Group>
@@ -169,7 +193,7 @@ function AppRouter() {
   };
 
   return (
-    <NavigationContainer key={navKey}>
+    <NavigationContainer key={navKey} ref={navigationRef}>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
         {renderScreens()}
       </RootStack.Navigator>
