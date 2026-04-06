@@ -15,16 +15,21 @@
     },
     "preview": {
       "channel": "preview",
+      "distribution": "internal",
       "android": {
         "buildType": "apk"
       },
       "ios": {
-        "simulator": true
+        "distribution": "internal",
+        "simulator": false
       }
     },
     "production": {
       "android": {
         "buildType": "app-bundle"
+      },
+      "ios": {
+        "distribution": "store"
       }
     }
   }

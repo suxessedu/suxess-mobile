@@ -29,9 +29,21 @@ import HomeTab from "./src/navigation/tabs/HomeTab";
 import RequestsTab from "./src/navigation/tabs/RequestsTab";
 import AccountTab from "./src/navigation/tabs/AccountTab";
 import NotificationsScreen from "./src/screens/common/NotificationsScreen";
+import NewsListScreen from "./src/screens/common/NewsListScreen";
+import NewsDetailScreen from "./src/screens/common/NewsDetailScreen";
 
 const RootStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+// Smooth slide transition config (reused across screens)
+const slideTransition = {
+  animation: "slide_from_right",
+  presentation: "card",
+};
+
+const fadeTransition = {
+  animation: "fade",
+};
 
 function MainAppTabs() {
   const { user } = useContext(AuthContext);
@@ -101,8 +113,8 @@ function AppRouter() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#FFFFFF" }}>
+        <ActivityIndicator size="large" color="#FFD700" />
       </View>
     );
   }
@@ -186,6 +198,8 @@ function AppRouter() {
         <RootStack.Screen name="Legal" component={LegalScreen} />
         <RootStack.Screen name="Chat" component={ChatScreen} />
         <RootStack.Screen name="Notifications" component={NotificationsScreen} />
+        <RootStack.Screen name="NewsList" component={NewsListScreen} />
+        <RootStack.Screen name="NewsDetail" component={NewsDetailScreen} />
         {/* Re-add Verification here for access from Account tab */}
         <RootStack.Screen name="Verification" component={VerificationScreen} />
       </RootStack.Group>
@@ -194,7 +208,14 @@ function AppRouter() {
 
   return (
     <NavigationContainer key={navKey} ref={navigationRef}>
-      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+      <RootStack.Navigator
+        screenOptions={{
+          headerShown: false,
+          animation: "slide_from_right",
+          animationDuration: 300,
+          gestureEnabled: true,
+        }}
+      >
         {renderScreens()}
       </RootStack.Navigator>
     </NavigationContainer>

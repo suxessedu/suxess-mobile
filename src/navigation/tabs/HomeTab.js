@@ -54,6 +54,19 @@ const ParentView = ({ user, navigation, data }) => (
       title="Request a Tutor"
       subtitle="Answer a few questions. We’ll handle the rest."
       onPress={() => navigation.navigate("RequestTutor")}
+      iconName="school-outline"
+      iconColor="#FF9800"
+      iconBgColor="#FFF3E0"
+    />
+
+    <ActionCard
+      title="News & Updates"
+      subtitle="Latest educational news and exams updates."
+      onPress={() => navigation.navigate("NewsList")}
+      iconName="newspaper-outline"
+      iconColor="#2196F3"
+      iconBgColor="#E3F2FD"
+      style={{ marginTop: 4 }}
     />
 
     {data.latestItem && (
@@ -113,6 +126,19 @@ const TeacherView = ({ user, navigation, data }) => (
       title="Browse Requests"
       subtitle="New opportunities are waiting."
       onPress={() => navigation.navigate("Browse")}
+      iconName="search-outline"
+      iconColor="#4CAF50"
+      iconBgColor="#E8F5E9"
+    />
+
+    <ActionCard
+      title="News & Updates"
+      subtitle="Stay informed with the latest updates."
+      onPress={() => navigation.navigate("NewsList")}
+      iconName="newspaper-outline"
+      iconColor="#2196F3"
+      iconBgColor="#E3F2FD"
+      style={{ marginTop: 4 }}
     />
 
     {data.latestItem && (

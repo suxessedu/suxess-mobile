@@ -10,26 +10,19 @@ export const AuthProvider = ({ children }) => {
   const [navKey, setNavKey] = useState(0);
 
   const login = async (email, password) => {
-    setIsLoading(true);
     try {
       const response = await api.post("/auth/login", { email, password });
       const userData = response.data.user;
       // Manually persist session cookie for Android/iOS
       const setCookie = response.headers["set-cookie"];
       if (setCookie) {
-        // set-cookie is likely an array. We join it or store it as is. 
-        // For the Cookie header, we usually want "key=value; key2=value2"
         const cookieString = Array.isArray(setCookie) ? setCookie.join("; ") : setCookie;
         await AsyncStorage.setItem("userCookie", cookieString);
       }
-      
       await AsyncStorage.setItem("userData", JSON.stringify(userData));
       setUser(userData);
-      
-      setIsLoading(false);
       return response.data;
     } catch (error) {
-      setIsLoading(false);
       throw error;
     }
   };
@@ -53,7 +46,6 @@ export const AuthProvider = ({ children }) => {
     const updatedUser = { ...user, profileComplete: true };
     setUser(updatedUser);
     await AsyncStorage.setItem("userData", JSON.stringify(updatedUser));
-    setNavKey((prevKey) => prevKey + 1);
   }, [user]);
 
   const registerPushToken = async (token) => {
