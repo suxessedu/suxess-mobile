@@ -21,6 +21,7 @@ import RequestCard from "../../components/RequestCard";
 import ProfileAlertBanner from "../../components/ProfileAlertBanner";
 import UpgradeBanner from "../../components/UpgradeBanner";
 import VerificationBanner from "../../components/VerificationBanner";
+import { HomeScreenSkeleton } from "../../components/SkeletonLoader";
 
 const ParentView = ({ user, navigation, data }) => (
   <>
@@ -189,6 +190,13 @@ const HomeTab = () => {
 
   const isParent = user?.role === "parent";
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView
@@ -199,9 +207,11 @@ const HomeTab = () => {
         }
       >
         <View style={styles.header}>
-          <Text style={styles.greeting}>
-            Good morning, {user?.fullName?.split(" ")[0] || "User"}
-          </Text>
+          <View>
+            <Text style={styles.greeting}>
+              {getGreeting()}, {user?.fullName?.split(" ")[0] || "there"} 👋
+            </Text>
+          </View>
           <TouchableOpacity
             style={{ position: "relative" }}
             onPress={() => navigation.navigate("Notifications")}
@@ -211,20 +221,21 @@ const HomeTab = () => {
               <View
                 style={{
                   position: "absolute",
-                  right: -2,
-                  top: -2,
-                  backgroundColor: COLORS.error, // Assuming you have an error/red color
-                  borderRadius: 8,
-                  width: 16,
-                  height: 16,
+                  right: -4,
+                  top: -4,
+                  backgroundColor: COLORS.primary,
+                  borderRadius: 10,
+                  minWidth: 18,
+                  height: 18,
                   justifyContent: "center",
                   alignItems: "center",
+                  paddingHorizontal: 3,
                   borderWidth: 1.5,
                   borderColor: COLORS.background,
                 }}
               >
                 <Text
-                  style={{ color: "white", fontSize: 10, fontWeight: "bold" }}
+                  style={{ color: COLORS.darkGray, fontSize: 10, fontWeight: "800" }}
                 >
                   {dashboardData.unreadCount > 9 ? "9+" : dashboardData.unreadCount}
                 </Text>
@@ -232,24 +243,13 @@ const HomeTab = () => {
             )}
           </TouchableOpacity>
         </View>
+
         {isLoading && !dashboardData.kpis.length ? (
-          <ActivityIndicator
-            size="large"
-            color={COLORS.primary}
-            style={{ marginTop: 50 }}
-          />
+          <HomeScreenSkeleton />
         ) : isParent ? (
-          <ParentView
-            user={user}
-            navigation={navigation}
-            data={dashboardData}
-          />
+          <ParentView user={user} navigation={navigation} data={dashboardData} />
         ) : (
-          <TeacherView
-            user={user}
-            navigation={navigation}
-            data={dashboardData}
-          />
+          <TeacherView user={user} navigation={navigation} data={dashboardData} />
         )}
       </ScrollView>
     </SafeAreaView>

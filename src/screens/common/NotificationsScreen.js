@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -6,49 +6,102 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  ActivityIndicator,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
 import api from "../../services/api";
+import { NotificationSkeleton } from "../../components/SkeletonLoader";
 
-const NotificationItem = ({ item, onPress }) => (
-  <TouchableOpacity
-    style={[styles.notificationItem, !item.isRead && styles.unreadItem]}
-    onPress={() => onPress(item)}
-  >
-    <View style={styles.iconContainer}>
-      <Ionicons
-        name={
-          item.type === "match"
-            ? "people-circle-outline"
-            : item.type === "success"
-            ? "checkmark-circle-outline"
-            : "information-circle-outline"
-        }
-        size={28}
-        color={COLORS.primary}
-      />
-    </View>
-    <View style={styles.contentContainer}>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.message}>{item.message}</Text>
-      <Text style={styles.time}>{item.createdAt}</Text>
-    </View>
-    {!item.isRead && <View style={styles.unreadDot} />}
-  </TouchableOpacity>
-);
+// Notification type config
+const TYPE_CONFIG = {
+  match: {
+    icon: "people-circle-outline",
+    color: "#4CAF50",
+    bg: "#E8F5E9",
+    label: "Match",
+  },
+  success: {
+    icon: "checkmark-circle-outline",
+    color: "#2196F3",
+    bg: "#E3F2FD",
+    label: "Success",
+  },
+  info: {
+    icon: "information-circle-outline",
+    color: COLORS.primary,
+    bg: COLORS.primaryLight,
+    label: "Info",
+  },
+  default: {
+    icon: "notifications-outline",
+    color: COLORS.gray,
+    bg: COLORS.lightGray,
+    label: "Update",
+  },
+};
+
+const NotificationItem = ({ item, onPress }) => {
+  const config = TYPE_CONFIG[item.type] || TYPE_CONFIG.default;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim }}>
+      <TouchableOpacity
+        style={[
+          styles.notificationItem,
+          !item.isRead && styles.unreadItem,
+        ]}
+        onPress={() => onPress(item)}
+        activeOpacity={0.8}
+      >
+        {/* Unread left bar */}
+        {!item.isRead && <View style={styles.unreadBar} />}
+
+        {/* Icon */}
+        <View style={[styles.iconBg, { backgroundColor: config.bg }]}>
+          <Ionicons name={config.icon} size={22} color={config.color} />
+        </View>
+
+        {/* Content */}
+        <View style={styles.contentContainer}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
+            {!item.isRead && <View style={styles.unreadDot} />}
+          </View>
+          <Text style={styles.message} numberOfLines={2}>{item.message}</Text>
+          <View style={styles.metaRow}>
+            <View style={[styles.typeBadge, { backgroundColor: config.bg }]}>
+              <Text style={[styles.typeText, { color: config.color }]}>{config.label}</Text>
+            </View>
+            <Text style={styles.time}>{item.createdAt}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
 
 const NotificationsScreen = ({ navigation }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const fetchNotifications = async () => {
     try {
       const response = await api.get("/notifications/");
       setNotifications(response.data);
+      setUnreadCount(response.data.filter((n) => !n.isRead).length);
     } catch (error) {
       console.error("Failed to fetch notifications", error);
     } finally {
@@ -70,10 +123,10 @@ const NotificationsScreen = ({ navigation }) => {
     if (!item.isRead) {
       try {
         await api.post(`/notifications/${item.id}/read`);
-        // Update local state to reflect read status
         setNotifications((prev) =>
           prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n))
         );
+        setUnreadCount((c) => Math.max(0, c - 1));
       } catch (error) {
         console.error("Failed to mark as read", error);
       }
@@ -84,6 +137,7 @@ const NotificationsScreen = ({ navigation }) => {
     try {
       await api.post("/notifications/read-all");
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
     } catch (error) {
       console.error("Failed to mark all as read", error);
     }
@@ -91,18 +145,34 @@ const NotificationsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.darkGray} />
+          <Ionicons name="arrow-back" size={22} color={COLORS.darkGray} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notifications</Text>
-        <TouchableOpacity onPress={markAllRead}>
-          <Text style={styles.markReadText}>Read All</Text>
-        </TouchableOpacity>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>Notifications</Text>
+          {unreadCount > 0 && (
+            <View style={styles.headerBadge}>
+              <Text style={styles.headerBadgeText}>{unreadCount} new</Text>
+            </View>
+          )}
+        </View>
+        {unreadCount > 0 ? (
+          <TouchableOpacity onPress={markAllRead} style={styles.markAllBtn}>
+            <Text style={styles.markReadText}>Mark all read</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 80 }} />
+        )}
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 20 }} />
+        <View style={styles.skeletonContainer}>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <NotificationSkeleton key={i} />
+          ))}
+        </View>
       ) : (
         <FlatList
           data={notifications}
@@ -111,12 +181,25 @@ const NotificationsScreen = ({ navigation }) => {
           )}
           keyExtractor={(item) => item.id.toString()}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={COLORS.primary}
+            />
           }
           ListEmptyComponent={
-            <Text style={styles.emptyText}>No notifications yet.</Text>
+            <View style={styles.emptyContainer}>
+              <View style={styles.emptyIconBg}>
+                <Ionicons name="notifications-off-outline" size={40} color={COLORS.primary} />
+              </View>
+              <Text style={styles.emptyTitle}>All caught up!</Text>
+              <Text style={styles.emptyText}>
+                You have no notifications right now. Check back later.
+              </Text>
+            </View>
           }
           contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </SafeAreaView>
@@ -124,86 +207,164 @@ const NotificationsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
+  container: { flex: 1, backgroundColor: COLORS.background },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: "#EFEFEF",
     backgroundColor: COLORS.white,
   },
   backButton: {
-    padding: 5,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: COLORS.lightGray,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerCenter: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 12,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "800",
+    color: COLORS.darkGray,
+    letterSpacing: -0.3,
+  },
+  headerBadge: {
+    marginLeft: 8,
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 20,
+  },
+  headerBadgeText: {
+    fontSize: 11,
+    fontWeight: "700",
     color: COLORS.darkGray,
   },
+  markAllBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    backgroundColor: COLORS.primaryLight,
+  },
   markReadText: {
-    color: COLORS.primary,
-    fontWeight: "600",
+    color: COLORS.darkGray,
+    fontWeight: "700",
+    fontSize: 12,
   },
-  listContent: {
-    padding: 20,
-  },
+  skeletonContainer: { padding: 16 },
+  listContent: { padding: 16, flexGrow: 1 },
   notificationItem: {
     flexDirection: "row",
     backgroundColor: COLORS.white,
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 12,
-    alignItems: "center",
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 10,
+    alignItems: "flex-start",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowRadius: 6,
     elevation: 2,
+    overflow: "hidden",
   },
   unreadItem: {
-    backgroundColor: "#fff9e6", // Light yellow tint for unread
-    borderLeftWidth: 4,
-    borderLeftColor: COLORS.primary,
+    backgroundColor: "#FFFCF0",
   },
-  iconContainer: {
-    marginRight: 15,
+  unreadBar: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    backgroundColor: COLORS.primary,
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
   },
-  contentContainer: {
-    flex: 1,
+  iconBg: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+    marginLeft: 6,
+    flexShrink: 0,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: COLORS.darkGray,
+  contentContainer: { flex: 1 },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 4,
   },
-  message: {
+  title: {
     fontSize: 14,
-    color: "#555",
-    marginBottom: 6,
-  },
-  time: {
-    fontSize: 12,
-    color: "#999",
+    fontWeight: "700",
+    color: COLORS.darkGray,
+    flex: 1,
+    marginRight: 6,
   },
   unreadDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: COLORS.primary,
-    marginLeft: 10,
+    flexShrink: 0,
+  },
+  message: {
+    fontSize: 13,
+    color: "#555",
+    lineHeight: 19,
+    marginBottom: 8,
+  },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  typeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 20,
+  },
+  typeText: { fontSize: 11, fontWeight: "700" },
+  time: { fontSize: 11, color: "#AAA" },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 30,
+    paddingVertical: 80,
+  },
+  emptyIconBg: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.darkGray,
+    marginBottom: 8,
   },
   emptyText: {
+    fontSize: 14,
+    color: COLORS.gray,
     textAlign: "center",
-    marginTop: 50,
-    color: "#999",
-    fontSize: 16,
+    lineHeight: 22,
   },
 });
 
