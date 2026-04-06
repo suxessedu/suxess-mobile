@@ -31,7 +31,11 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
+.env.local
 .env*.local
+.env.development
+.env.production
 
 # typescript
 *.tsbuildinfo
@@ -39,4 +43,16 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# ============================================
+# SENSITIVE FILES — DO NOT COMMIT THESE
+# ============================================
+# Firebase credentials (contains live API keys)
 google-services.json
+GoogleService-Info.plist
+
+# Apple signing certificates
+*.p12
+*.mobileprovision
+*.cer
+*.certSigningRequest
