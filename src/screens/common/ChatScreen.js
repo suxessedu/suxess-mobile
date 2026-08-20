@@ -56,27 +56,40 @@ const ChatScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
+          activeOpacity={0.7}
         >
-          <Ionicons
-            name="arrow-back-outline"
-            size={24}
-            color={COLORS.darkGray}
-          />
+          <Ionicons name="arrow-back" size={22} color={COLORS.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{otherUserName}</Text>
+        <View style={styles.headerInfo}>
+          <Text style={styles.headerTitle}>{otherUserName || "Chat"}</Text>
+          <Text style={styles.headerSubtitle}>Direct Message</Text>
+        </View>
+        <View style={{ width: 36 }} />
       </View>
+
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.keyboardAvoidingView}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         {loading ? (
-          <ActivityIndicator style={{ flex: 1 }} />
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color={COLORS.brand} />
+          </View>
+        ) : messages.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIconBg}>
+              <Ionicons name="chatbubbles-outline" size={36} color={COLORS.brandInk} />
+            </View>
+            <Text style={styles.emptyTitle}>Start the conversation</Text>
+            <Text style={styles.emptySubtitle}>
+              Say hi to discuss lesson details and schedules.
+            </Text>
+          </View>
         ) : (
           <FlatList
             data={messages}
@@ -103,18 +116,29 @@ const ChatScreen = ({ navigation }) => {
               </View>
             )}
             contentContainerStyle={styles.messageList}
+            keyboardShouldPersistTaps="handled"
           />
         )}
+
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             value={newMessage}
             onChangeText={setNewMessage}
             placeholder="Type a message..."
-            placeholderTextColor={COLORS.gray}
+            placeholderTextColor={COLORS.textPlaceholder}
+            multiline
           />
-          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-            <Ionicons name="send" size={20} color={COLORS.darkGray} />
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              { opacity: newMessage.trim().length > 0 ? 1 : 0.6 },
+            ]}
+            onPress={handleSend}
+            disabled={newMessage.trim().length === 0}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="send" size={18} color={COLORS.brandInk} />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -123,53 +147,150 @@ const ChatScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.white },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.bg,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-    backgroundColor: COLORS.white,
+    borderBottomColor: COLORS.border,
+    backgroundColor: COLORS.surface,
   },
-  backButton: { padding: 10 },
-  headerTitle: { fontSize: 18, fontWeight: "bold", color: COLORS.darkGray },
-  keyboardAvoidingView: { flex: 1 },
-  messageList: { paddingHorizontal: 10, paddingTop: 10 },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: COLORS.surfaceAlt,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerInfo: {
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+    letterSpacing: -0.2,
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+  },
+  emptyIconBg: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 195, 0, 0.3)",
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  messageList: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
   messageBubble: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 14, // 14px radius token to match buttons
     maxWidth: "80%",
     marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  myMessage: { backgroundColor: COLORS.primary, alignSelf: "flex-end" },
-  theirMessage: { backgroundColor: COLORS.lightGray, alignSelf: "flex-start" },
-  myMessageText: { fontSize: 16, color: COLORS.darkGray },
-  theirMessageText: { fontSize: 16, color: COLORS.darkGray },
+  myMessage: {
+    backgroundColor: COLORS.brand,
+    alignSelf: "flex-end",
+    borderBottomRightRadius: 4,
+    borderWidth: 1,
+    borderColor: "rgba(20, 23, 26, 0.1)",
+  },
+  theirMessage: {
+    backgroundColor: COLORS.surface,
+    alignSelf: "flex-start",
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  myMessageText: {
+    fontSize: 15,
+    color: COLORS.brandInk,
+    lineHeight: 21,
+    fontWeight: "500",
+  },
+  theirMessageText: {
+    fontSize: 15,
+    color: COLORS.textPrimary,
+    lineHeight: 21,
+  },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
-    backgroundColor: COLORS.white,
+    borderTopColor: COLORS.border,
+    backgroundColor: COLORS.surface,
   },
   input: {
     flex: 1,
-    height: 44,
-    backgroundColor: COLORS.lightGray,
-    borderRadius: 22,
-    paddingHorizontal: 15,
+    minHeight: 44,
+    maxHeight: 100,
+    backgroundColor: COLORS.surfaceAlt,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     marginRight: 10,
     fontSize: 16,
+    color: COLORS.textPrimary,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   sendButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.primary,
+    borderRadius: 14,
+    backgroundColor: COLORS.brand,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderStrong,
     justifyContent: "center",
     alignItems: "center",
   },

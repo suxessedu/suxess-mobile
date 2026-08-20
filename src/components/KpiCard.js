@@ -1,23 +1,24 @@
 import React, { useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Animated } from "react-native";
+import { View, Text, StyleSheet, Animated, TouchableOpacity } from "react-native";
 import { COLORS } from "../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
+import AnimatedCounter from "./AnimatedCounter";
 
-const KpiCard = ({ value, label, iconName }) => {
-  const scaleAnim = useRef(new Animated.Value(0.85)).current;
+const KpiCard = ({ value, label, iconName, onPress }) => {
+  const scaleAnim = useRef(new Animated.Value(0.92)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.spring(scaleAnim, {
         toValue: 1,
-        friction: 6,
+        friction: 7,
         tension: 80,
         useNativeDriver: true,
       }),
       Animated.timing(opacityAnim, {
         toValue: 1,
-        duration: 350,
+        duration: 300,
         useNativeDriver: true,
       }),
     ]).start();
@@ -30,11 +31,18 @@ const KpiCard = ({ value, label, iconName }) => {
         { opacity: opacityAnim, transform: [{ scale: scaleAnim }] },
       ]}
     >
-      <View style={styles.iconBg}>
-        <Ionicons name={iconName} size={16} color={COLORS.primary} />
-      </View>
-      <Text style={styles.value}>{value}</Text>
-      <Text style={styles.label}>{label}</Text>
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={onPress}
+        disabled={!onPress}
+        style={styles.innerTouchable}
+      >
+        <View style={styles.iconBg}>
+          <Ionicons name={iconName || "stats-chart"} size={16} color={COLORS.brandInk} />
+        </View>
+        <AnimatedCounter value={value} style={styles.value} />
+        <Text style={styles.label}>{label}</Text>
+      </TouchableOpacity>
     </Animated.View>
   );
 };
@@ -42,17 +50,19 @@ const KpiCard = ({ value, label, iconName }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    padding: 14,
+    backgroundColor: COLORS.surface,
     borderRadius: 16,
-    marginHorizontal: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    marginHorizontal: 4,
     borderWidth: 1,
-    borderColor: "#F0F0F0",
+    borderColor: COLORS.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  innerTouchable: {
+    padding: 14,
   },
   iconBg: {
     width: 32,
@@ -61,20 +71,22 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryLight,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255, 195, 0, 0.2)",
   },
   value: {
     fontSize: 26,
-    fontWeight: "800",
-    color: COLORS.darkGray,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
     letterSpacing: -0.5,
   },
   label: {
-    fontSize: 11,
-    color: COLORS.gray,
+    fontSize: 12,
+    color: COLORS.textSecondary,
     marginTop: 3,
     fontWeight: "500",
-    lineHeight: 15,
+    lineHeight: 16,
   },
 });
 

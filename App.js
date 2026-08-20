@@ -85,13 +85,16 @@ function MainAppTabs() {
   );
 }
 
+import { ToastProvider, useToast } from "./src/context/ToastContext";
 import { usePushNotifications } from "./src/hooks/usePushNotifications";
 import { createNavigationContainerRef } from "@react-navigation/native";
 
 export const navigationRef = createNavigationContainerRef();
 
 function AppRouter() {
-  // Handle Notification Response (Deep Linking)
+  const { showToast } = useToast();
+
+  // Handle Notification Response (Deep Linking when user taps notification from tray)
   const handleNotificationResponse = (response) => {
     const data = response.notification.request.content.data;
     if (data?.requestId && navigationRef.isReady()) {
@@ -99,7 +102,7 @@ function AppRouter() {
     }
   };
 
-  const { expoPushToken } = usePushNotifications(handleNotificationResponse);
+  const { expoPushToken, notification } = usePushNotifications(handleNotificationResponse);
   const { user, isLoading, navKey, registerPushToken } = useContext(AuthContext);
 
   // Register token when user logs in
@@ -109,6 +112,32 @@ function AppRouter() {
       registerPushToken(expoPushToken);
     }
   }, [user, expoPushToken]);
+
+  // Show Toast when a notification is received in foreground
+  React.useEffect(() => {
+    if (notification) {
+      const content = notification.request?.content;
+      if (content) {
+        showToast({
+          title: content.title || "Notification",
+          message: content.body || "",
+          type: content.data?.type === "match" ? "match" : "info",
+          action: content.data?.requestId
+            ? {
+                label: "View",
+                onPress: () => {
+                  if (navigationRef.isReady()) {
+                    navigationRef.navigate("RequestDetails", {
+                      requestId: content.data.requestId,
+                    });
+                  }
+                },
+              }
+            : undefined,
+        });
+      }
+    }
+  }, [notification]);
 
 
   if (isLoading) {
@@ -225,7 +254,9 @@ function AppRouter() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppRouter />
+      <ToastProvider>
+        <AppRouter />
+      </ToastProvider>
     </AuthProvider>
   );
 }

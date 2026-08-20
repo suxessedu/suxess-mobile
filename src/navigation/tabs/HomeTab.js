@@ -4,9 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
   RefreshControl,
-  Alert,
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -38,36 +36,41 @@ const ParentView = ({ user, navigation, data }) => (
         value={data.kpis[0]?.value || 0}
         label="Active Requests"
         iconName="hourglass-outline"
+        onPress={() => navigation.navigate("My Requests")}
       />
       <KpiCard
         value={data.kpis[1]?.value || 0}
         label="Matched Tutors"
         iconName="people-outline"
+        onPress={() => navigation.navigate("My Requests")}
       />
       <KpiCard
         value={data.kpis[2]?.value || 0}
         label="Completed"
         iconName="checkmark-done-outline"
+        onPress={() => navigation.navigate("My Requests")}
       />
     </View>
 
+    {/* Primary CTA with Neubrutalist Accent */}
     <ActionCard
+      isNeubrutalist
       title="Request a Tutor"
-      subtitle="Answer a few questions. We’ll handle the rest."
+      subtitle="Answer a few questions. We’ll find the best verified match."
       onPress={() => navigation.navigate("RequestTutor")}
-      iconName="school-outline"
-      iconColor="#FF9800"
-      iconBgColor="#FFF3E0"
+      iconName="school"
+      iconColor={COLORS.brandInk}
+      iconBgColor={COLORS.brand}
     />
 
     <ActionCard
       title="News & Updates"
-      subtitle="Latest educational news and exams updates."
+      subtitle="Latest educational announcements & exam tips."
       onPress={() => navigation.navigate("NewsList")}
       iconName="newspaper-outline"
-      iconColor="#2196F3"
-      iconBgColor="#E3F2FD"
-      style={{ marginTop: 4 }}
+      iconColor="#2563EB"
+      iconBgColor="#EFF6FF"
+      style={{ marginTop: 2 }}
     />
 
     {data.latestItem && (
@@ -110,36 +113,41 @@ const TeacherView = ({ user, navigation, data }) => (
         value={data.kpis[0]?.value || 0}
         label="New Requests"
         iconName="mail-unread-outline"
+        onPress={() => navigation.navigate("Browse")}
       />
       <KpiCard
         value={data.kpis[1]?.value || 0}
         label="Your Students"
         iconName="school-outline"
+        onPress={() => navigation.navigate("My Requests")}
       />
       <KpiCard
         value={data.kpis[2]?.value || 0}
         label="Sessions"
         iconName="calendar-outline"
+        onPress={() => navigation.navigate("My Requests")}
       />
     </View>
 
+    {/* Primary CTA with Neubrutalist Accent */}
     <ActionCard
-      title="Browse Requests"
-      subtitle="New opportunities are waiting."
+      isNeubrutalist
+      title="Browse Tuition Requests"
+      subtitle="New students in your area are waiting for verified tutors."
       onPress={() => navigation.navigate("Browse")}
-      iconName="search-outline"
-      iconColor="#4CAF50"
-      iconBgColor="#E8F5E9"
+      iconName="search"
+      iconColor={COLORS.brandInk}
+      iconBgColor={COLORS.brand}
     />
 
     <ActionCard
       title="News & Updates"
-      subtitle="Stay informed with the latest updates."
+      subtitle="Stay informed with platform updates & guidance."
       onPress={() => navigation.navigate("NewsList")}
       iconName="newspaper-outline"
-      iconColor="#2196F3"
-      iconBgColor="#E3F2FD"
-      style={{ marginTop: 4 }}
+      iconColor="#2563EB"
+      iconBgColor="#EFF6FF"
+      style={{ marginTop: 2 }}
     />
 
     {data.latestItem && (
@@ -211,32 +219,21 @@ const HomeTab = () => {
             <Text style={styles.greeting}>
               {getGreeting()}, {user?.fullName?.split(" ")[0] || "there"} 👋
             </Text>
+            <Text style={styles.subGreeting}>
+              {isParent
+                ? "Connecting you with verified private tutors"
+                : "Your professional tutoring dashboard"}
+            </Text>
           </View>
           <TouchableOpacity
-            style={{ position: "relative" }}
+            style={styles.notificationButton}
             onPress={() => navigation.navigate("Notifications")}
+            activeOpacity={0.7}
           >
-            <Ionicons name="notifications-outline" size={28} color={COLORS.darkGray} />
+            <Ionicons name="notifications-outline" size={24} color={COLORS.textPrimary} />
             {dashboardData.unreadCount > 0 && (
-              <View
-                style={{
-                  position: "absolute",
-                  right: -4,
-                  top: -4,
-                  backgroundColor: COLORS.primary,
-                  borderRadius: 10,
-                  minWidth: 18,
-                  height: 18,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  paddingHorizontal: 3,
-                  borderWidth: 1.5,
-                  borderColor: COLORS.background,
-                }}
-              >
-                <Text
-                  style={{ color: COLORS.darkGray, fontSize: 10, fontWeight: "800" }}
-                >
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
                   {dashboardData.unreadCount > 9 ? "9+" : dashboardData.unreadCount}
                 </Text>
               </View>
@@ -257,34 +254,69 @@ const HomeTab = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  scrollViewContent: { paddingHorizontal: 20, paddingBottom: 80, flexGrow: 1 },
+  container: { flex: 1, backgroundColor: COLORS.bg },
+  scrollViewContent: { paddingHorizontal: 16, paddingBottom: 90, flexGrow: 1 },
   header: {
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingTop: 16,
+    paddingBottom: 14,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  greeting: { fontSize: 26, fontWeight: "bold", color: COLORS.darkGray },
-  reassuranceText: {
-    fontSize: 14,
-    color: COLORS.gray,
-    marginBottom: 20,
-    marginTop: 4,
+  greeting: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+    letterSpacing: -0.3,
+  },
+  subGreeting: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  notificationButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
+  badge: {
+    position: "absolute",
+    right: -2,
+    top: -2,
+    backgroundColor: COLORS.brand,
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: COLORS.surface,
+  },
+  badgeText: {
+    color: COLORS.brandInk,
+    fontSize: 10,
+    fontWeight: "800",
   },
   kpiContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 25,
-    marginHorizontal: -5,
+    marginVertical: 16,
+    marginHorizontal: -4,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: COLORS.darkGray,
-    marginTop: 30,
-    marginBottom: 15,
+    fontSize: 17,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+    marginTop: 20,
+    marginBottom: 12,
+    letterSpacing: -0.2,
   },
 });
 
